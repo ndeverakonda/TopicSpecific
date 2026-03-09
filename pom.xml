@@ -9,11 +9,7 @@
 
   <name>TopicSpecificTasks</name>
   <url>http://maven.apache.org</url>
-    <modules>
-        <module>Generic</module>
-      <module>FunctionalStream</module>
-      <module>Regex</module>
-    </modules>
+
 
     <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

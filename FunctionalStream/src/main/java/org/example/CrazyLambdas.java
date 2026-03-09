@@ -1,5 +1,5 @@
 package org.example;
-
+import java.util.Random;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.Map;
@@ -22,20 +22,11 @@ public class CrazyLambdas {
     }
 
     public static Predicate<String> isEmptyPredicate() {
-        return String::isEmpty;
+        return s -> s.isEmpty();
     }
 
     public static BiFunction<String, Integer, String> stringMultiplier() {
-        return (s, n) -> {
-            if (n <= 0) {
-                return "";
-            }
-            StringBuilder sb = new StringBuilder(s.length() * n);
-            for (int i = 0; i < n; i++) {
-                sb.append(s);
-            }
-            return sb.toString();
-        };
+        return (s, n) -> s.repeat(n);
     }
 
     public static Function<BigDecimal, String> toDollarStringFunction() {
@@ -47,11 +38,13 @@ public class CrazyLambdas {
     }
 
     public static IntSupplier randomIntSupplier() {
-        return () -> (int) (Math.random() * Integer.MAX_VALUE);
+        Random random = new Random();
+        return () -> random.nextInt();
     }
 
     public static IntUnaryOperator boundedRandomIntSupplier() {
-        return bound -> (int) (Math.random() * bound);
+        Random random = new Random();
+        return bound -> random.nextInt(bound);
     }
 
     public static IntUnaryOperator intSquareOperation() {
@@ -63,7 +56,7 @@ public class CrazyLambdas {
     }
 
     public static ToIntFunction<String> stringToIntConverter() {
-        return Integer::parseInt;
+        return s -> Integer.parseInt(s);
     }
 
     public static Supplier<IntUnaryOperator> nMultiplyFunctionSupplier(int n) {
@@ -71,31 +64,32 @@ public class CrazyLambdas {
     }
 
     public static UnaryOperator<Function<String, String>> composeWithTrimFunction() {
-        return f -> f.andThen(String::trim);
+        return f -> s -> f.apply(s.trim());
     }
 
     public static Supplier<Thread> runningThreadSupplier(Runnable runnable) {
         return () -> {
-            Thread t = new Thread(runnable);
-            t.start();
-            return t;
+            Thread thread = new Thread(runnable);
+            thread.start();
+            return thread;
         };
     }
 
     public static Consumer<Runnable> newThreadRunnableConsumer() {
-        return r -> new Thread(r).start();
+        return runnable -> new Thread(runnable).start();
     }
 
     public static Function<Runnable, Supplier<Thread>> runnableToThreadSupplierFunction() {
-        return r -> () -> {
-            Thread t = new Thread(r);
-            t.start();
-            return t;
+        return runnable -> () -> {
+            Thread thread = new Thread(runnable);
+            thread.start();
+            return thread;
         };
     }
 
     public static BiFunction<IntUnaryOperator, IntPredicate, IntUnaryOperator> functionToConditionalFunction() {
-        return (func, pred) -> x -> pred.test(x) ? func.applyAsInt(x) : x;
+        return (function, predicate) -> x ->
+                predicate.test(x) ? function.applyAsInt(x) : x;
     }
 
     public static BiFunction<Map<String, IntUnaryOperator>, String, IntUnaryOperator> functionLoader() {
@@ -103,14 +97,17 @@ public class CrazyLambdas {
     }
 
     public static <T, U extends Comparable<? super U>> Comparator<T> comparing(Function<? super T, ? extends U> mapper) {
-        return (a, b) -> mapper.apply(a).compareTo(mapper.apply(b));
+        return (o1, o2) -> mapper.apply(o1).compareTo(mapper.apply(o2));
     }
 
     public static <T, U extends Comparable<? super U>> Comparator<T> thenComparing(
             Comparator<? super T> comparator, Function<? super T, ? extends U> mapper) {
-        return (a, b) -> {
-            int res = comparator.compare(a, b);
-            return res != 0 ? res : mapper.apply(a).compareTo(mapper.apply(b));
+        return (o1, o2) -> {
+            int result = comparator.compare(o1, o2);
+            if (result != 0) {
+                return result;
+            }
+            return mapper.apply(o1).compareTo(mapper.apply(o2));
         };
     }
 
